@@ -1,0 +1,14 @@
+market_order
+type:"market_order"
+attributes:<key:"orderer" value:"cre16z4jzpnmhg0rdagywex4z5glldq77zuuwtgy0s" index:true > 
+attributes:<key:"pair_id" value:"20" index:true >
+attributes:<key:"order_direction" value:"ORDER_DIRECTION_BUY" index:true >
+attributes:<key:"offer_coin" value:"330280000ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1" index:true > 
+attributes:<key:"demand_coin_denom" value:"ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9" index:true >
+attributes:<key:"price" value:"16.514000000000000000" index:true >
+attributes:<key:"amount" value:"20000000" index:true >
+attributes:<key:"order_id" value:"408509" index:true >
+attributes:<key:"batch_id" value:"3517910" index:true >
+attributes:<key:"expire_at" value:"2023-02-09T02:15:29Z" index:true >
+attributes:<key:"refunded_coins" value:"29000000ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1" index:true >
+

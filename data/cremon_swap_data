@@ -1,0 +1,38 @@
+* struct
+import (
+	liquiditytypes "github.com/crescent-network/crescent/v4/x/liquidity/types"
+)
+
+// struct as a message for rpc, trace channel communication
+type MsgSwap struct {
+	Order     liquiditytypes.Order
+	TxHash    string
+	Height    int64
+	Timestamp int64
+}
+================================================================
+
+
+* required data
+
+insertNew
+  새 bar 여부
+
+[완료] ts_now
+  ts_now := time.Now().Unix()
+
+ts_60bar
+  var curLowestBarTs int64 // bar ts for 1m.
+  // record chart
+  // 여기서 v.Timestamp == types.MsgSwap.Timestamp
+  if v.Timestamp < curLowestBarTs || curLowestBarTs == 0 {
+    curLowestBarTs = v.Timestamp
+  }
+  ts_60bar := int64(math.Floor(float64(curLowestBarTs)/60/1000000) * 60)
+
+lastTs
+p
+b.Cnt
+b.Price
+b.Vol
+openPrice

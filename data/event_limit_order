@@ -1,0 +1,13 @@
+type:"limit_order" 
+attributes:<key:"orderer" value:"cre1fvk4770fhf3dxcz2gmgunvrngv28rrvrlrl9fk" index:true > 
+attributes:<key:"pair_id" value:"25" index:true > 
+attributes:<key:"order_direction" value:"ORDER_DIRECTION_SELL" index:true > 
+attributes:<key:"offer_coin" value:"130172759ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3" index:true > 
+attributes:<key:"demand_coin_denom" value:"ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41" index:true > 
+attributes:<key:"price" value:"0.990220000000000000" index:true > 
+attributes:<key:"amount" value:"130172759" index:true > 
+attributes:<key:"order_id" value:"7389" index:true > 
+attributes:<key:"batch_id" value:"1552488" index:true > 
+attributes:<key:"expire_at" value:"2023-02-09T02:15:24Z" index:true > 
+attributes:<key:"refunded_coins" value:"0ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3" index:true > 
+

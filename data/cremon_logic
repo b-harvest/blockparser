@@ -1,0 +1,254 @@
+dbproc.go
+->
+
+
+func (dp *DbProc) Flush(ctx context.Context, flushtype int) error {
+	//for chart
+	var curLowestBarTs int64 // bar ts for 1m.
+	barUpdatePair := make(map[uint64]*BarRec)
+
+
+->
+	//18. swap
+	dp.insertLock[SwapIdx].Lock()
+	if len(dp.aCacheSliceSwapRow) > 0 {
+->
+		switch int(o.Status) {
+			case 1: // not excuted
+			case 3, 4: // part, full swap
+			case 5: // cancel
+			case 6: // expired
+
+->
+case 3,4 에서 다음 로직 수행
+	bup, ok := barUpdatePair[o.PairId]
+	if !ok {
+		if pi != nil {
+			b := &BarRec{
+				Vol:   sdktypes.NewDecFromIntWithPrec(swapBaseAmt, exp).MustFloat64(), //swapBaseAmt.ToDec(),
+				Price: pi.LastPrice.Mul(pi.PriceMultiplier).MustFloat64(),
+				Cnt:   1,
+			}
+
+			barUpdatePair[o.PairId] = b
+			//fmt.Print("\n bar added")
+
+		}
+
+	} else {
+		bup.Vol += sdktypes.NewDecFromIntWithPrec(swapBaseAmt, exp).MustFloat64()
+		bup.Cnt++
+		//fmt.Print("\n bar vol added")
+	}
+
+->
+case 6 (expired) 에서 아래 로직 수행
+다만 조건문이 좀 붙는데..
+case 6: // expired
+				//expired status can be 'partially matched + expired'
+				//partially match state is overwrited in a endblock, so only expired state can be received
+				ordInfo, ok := dp.orderInfoState[unikey]
+
+				if !ok {
+				} else {
+					// filled this batch
+					filledOfferAmount := ordInfo.RemainOfferAmount.Sub(o.RemainingOfferCoin.Amount)
+					filledDemandAmount := o.ReceivedCoin.Amount.Sub(ordInfo.DemainCoinAmount)
+
+					if !filledOfferAmount.IsZero() && !filledDemandAmount.IsZero() {
+
+
+->
+						// record chart
+						pi, ok := global.PairInfos[o.PairId]
+						if !ok {
+							global.TgMsg <- "no pair info in swap"
+						} else {
+							if v.Timestamp < curLowestBarTs || curLowestBarTs == 0 {
+								curLowestBarTs = v.Timestamp
+							}
+							exp := int64(6)
+							if pi != nil {
+								d, ok := global.DenomsMap[pi.BaseDenom]
+								if ok {
+									exp = int64(d.Exponent)
+								} else {
+									global.TgMsg <- "no denom map. use default exp(6):" + pi.BaseDenom
+								}
+
+								bup, ok := barUpdatePair[o.PairId]
+								if !ok {
+									b := &BarRec{
+										Vol:   sdktypes.NewDecFromIntWithPrec(swapBaseAmt, exp).MustFloat64(), //swapBaseAmt.ToDec(),
+										Price: pi.LastPrice.Mul(pi.PriceMultiplier).MustFloat64(),
+										Cnt:   1,
+									}
+
+									barUpdatePair[o.PairId] = b
+									//fmt.Print("\n bar added")
+
+								} else {
+									bup.Vol += sdktypes.NewDecFromIntWithPrec(swapBaseAmt, exp).MustFloat64()
+									bup.Cnt++
+									//fmt.Print("\n bar vol added")
+								}
+
+							}
+						}
+
+->
+18. swap 에서 barUpdatePair 값이 업데이트된다.
+barUpdatePair 는 array 이다. pair 별로 업데이트할 bar 가 있는지에 대한 정보를 담고 있다.
+그리고 실제 업데이트를 99. chart 에서 수행한다.
+
+	// chart use different session
+	//99. chart
+	if len(barUpdatePair) > 0 {
+
+		tnano := time.Now().UnixNano()
+		// set start time of 60sec bar (from microsec to sec)
+		ts_60bar := int64(math.Floor(float64(curLowestBarTs)/60/1000000) * 60)
+		ts_now := time.Now().Unix()
+
+		fmt.Printf("\nt60 ,tnow, tLast = %d %d\n", ts_60bar, ts_now)
+
+		for p, b := range barUpdatePair {
+			pi, ok := global.PairInfos[p]
+			if !ok {
+				// skip if no pair info
+				continue
+			}
+
+			b.Price = pi.LastPrice.Mul(pi.PriceMultiplier).MustFloat64()
+			fmt.Printf("LastTS(%d):%d\n", p, pi.LastBarTs)
+
+			insertNew := (ts_60bar > pi.LastBarTs || pi.LastBarTs == 0)
+			openPrice := 0.0
+			lastTs := pi.LastBarTs
+			if insertNew {
+				openPrice = b.Price
+				if !pi.PrevLastPrice.IsNil() && !pi.PrevLastPrice.IsZero() {
+					openPrice = pi.PrevLastPrice.MustFloat64()
+				}
+				pi.LastBarTs = ts_60bar
+			}
+
+			go func(insert bool, ts_now, ts_60bar, lastBarTs int64, pair, cnt uint64, price, v, open float64) {
+				//TODO: use connection pool instead (or seperated to other process)
+				conn, err := dbr.Open("mysql", global.Config.DatabaseURI, nil)
+				if err != nil {
+					global.TgMsg <- "chart db open err"
+					return
+				}
+				sess := conn.NewSession(nil)
+				if insertNew {
+
+					//new bar
+					call_insert := "CALL chart_insert(?,?,?,?,?)"
+					sess.Exec(call_insert, pair, ts_60bar, price, open, lastBarTs)
+					// chart_insert procedure changed.
+
+					//fmt.Printf("\nNEW BAR\n")
+				}
+				// update current bar
+				updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + ?, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
+				sess.Exec(updateQ, ts_now, price, v, cnt, price, price, pair)
+
+				sess.Close()
+				conn.Close()
+
+				fmt.Println(tnano - time.Now().UnixNano())
+
+			}(insertNew, ts_now, ts_60bar, lastTs, p, b.Cnt, b.Price, b.Vol, openPrice)
+
+			// update prev lastprice
+			pi.PrevLastPrice = pi.LastPrice.Mul(pi.PriceMultiplier)
+
+		}
+	}
+
+
+
+->
+이제 DB 에 insert 혹은 update 가 완료되었다. 그런데 18. swap 에서 어떤 데이터를 다루는지 알아야 한다.
+swap 에 대한 flush 프로세스는 다음 if문을 통해 발동된다.
+if len(dp.aCacheSliceSwapRow) > 0 {
+
+따라서 aCacheSliceSwapRow 에 쌓이는 데이터를 확인한다.
+	// mCache => Map. if multiple rows in a block with the same key and only the latest is meaningful.
+	// aCache => array. if the sequence of events is essential, use array.
+	aCacheSliceSwapRow                []types.MsgSwap
+
+이 배열에는 다음이 저장되더라.
+aSliceSwapRow := make([]types.MsgSwap, 0, 1000)
+aCacheSliceSwapRow:                aSliceSwapRow,
+
+		//to be GC previous map
+		dp.aCacheSliceSwapRow = make([]types.MsgSwap, 0, 1000)
+
+		dp.aCacheSliceSwapRow = append(dp.aCacheSliceSwapRow, v)
+
+->
+데이터가 들어오는 로직은 다음과 같다.
+// connect ws and handling
+func (dp *DbProc) Start(ctx context.Context, ch chan interface{}) error {
+	for {
+		select {
+		case t := <-ticker.C:
+			//flush can be called directly only if triggered by a ticker
+			//Using model.DBFlsuh via channel is not guaranteed to invoke Flush in time because of channel delay(# of queuing events is unpredictable )
+			dp.Flush(ctx, 2)
+			global.TgMsg <- "FLUSH by Ticker" + t.String()
+		case data := <-ch:
+			switch dt := data.(type) {
+			case types.MsgSwap:
+
+				dp.insertLock[SwapIdx].Lock()
+
+				v, ok := data.(types.MsgSwap)
+				if !ok {
+					fmt.Print("decode error")
+					dp.insertLock[SwapIdx].Unlock()
+					continue
+				}
+
+				dp.aCacheSliceSwapRow = append(dp.aCacheSliceSwapRow, v)
+
+				dp.insertLock[SwapIdx].Unlock()
+
+
+
+->
+그렇다면 이 types.MsgSwap 은 어디서 가져오냐?
+-> traceproc.go 에서 담는다.
+-> 
+func (tp *TraceProc) LiquidityProcess(data TraceOperation) error {
+	switch data.Key[0] {
+	case liquiditytypes.OrderKeyPrefix[0]:
+
+		// key prefix + pairId(Uint64) + requestId(Uint64)
+		pairId := sdk.BigEndianToUint64(data.Key[1:9])
+		reqId := sdk.BigEndianToUint64(data.Key[9:17])
+
+		var req liquiditytypes.Order
+		if err := global.Config.Cdc.Unmarshal(data.Value, &req); err != nil {
+			fmt.Print("lqerr:", err)
+			return err
+		}
+
+		fmt.Printf("\nSwapReq height:%d txhash:%s\n%v\n", data.BlockHeight, data.TxHash, req)
+		if pairId != req.PairId || reqId != req.Id {
+			fmt.Printf("key-value mismatch :%d %d => %d %d\n", pairId, req.PairId, reqId, req.Id)
+			//panic("key-value mismatch")
+			//return errors.New("Pool ID error")
+		}
+
+		m := types.MsgSwap{
+			Order:     req,
+			Height:    data.BlockHeight,
+			Timestamp: time.Now().UnixMicro(),
+			TxHash:    data.TxHash,
+		}
+
+		tp.DbProcCh <- m
+
