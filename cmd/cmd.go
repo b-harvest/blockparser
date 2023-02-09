@@ -215,8 +215,9 @@ func BlockParserCmdForChart() *cobra.Command {
 									// 하지만 위 insert 문에서 모두 커버한다.
 									// lastTs 가 없는 상황에서 프로그램이 시작되므로 bar 가 없다면 insert 후 시작한다.
 									// 그 후 순차적으로 블록을 탐색하기 때문에 bar 는 반드시 존재한다.
-									updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
-									_, err = conn.Exec(updateQ, ts_now, price, v, price, price, pair)
+									//updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
+									updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select uid from chart_data where pair_id=? and ts_sec in (SELECT MAX(ts_sec) as ts_sec FROM chart_data WHERE ts_sec <= ? and pair_id=? GROUP BY resolution))"
+									_, err = conn.Exec(updateQ, ts_now, price, v, price, price, pair, ts_60bar, pair)
 									if err != nil {
 										fmt.Println(err)
 									} else {
