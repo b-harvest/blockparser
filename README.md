@@ -12,11 +12,14 @@ go build
 
 ## How to
 ```bash
+# Usage : blockparser chart [chain-dir] [start-height] [end-height]
+go run main.go chart ~/.crescent 4902001 4902100
+
 # Usage : blockparser [chain-dir] [start-height] [end-height]
 blockparser ~/.crescent 402001 432001
 
 # Usage : blockparser [rpc-url] [start-height] [end-height]
-blockparser https://mainnet.crescent.network:26657 402001 432001
+blockparser rpc https://mainnet.crescent.network:26657 402001 432001
 ```
 
 output : blockparser
