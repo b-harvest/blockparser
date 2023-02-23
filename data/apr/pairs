@@ -1,0 +1,369 @@
+{
+  "__comment__": "https://mainnet.crescent.network:1317/crescent/liquidity/v1beta1/pairs",
+  "pairs": [
+    {
+      "id": "1",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ucre",
+      "escrow_address": "cre17u9nx0h9cmhypp6cg9lf4q8ku9l3k8mz232su7m28m39lkz25dgqw9sanj",
+      "last_order_id": "414185",
+      "last_price": "1.209300000000000000",
+      "current_batch_id": "4533566"
+    },
+    {
+      "id": "2",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ibc/6F4968A73F90CF7DE6394BF937D6DF7C7D162D74D839C13F53B41157D315E05F",
+      "escrow_address": "cre1dsm56ejte5wsvptgtlq8qy3qvw6vpgz8w3z77f7cyjkmayzq3fxspcy0l0",
+      "last_order_id": "237777",
+      "last_price": "3.988000000000000000",
+      "current_batch_id": "3703764"
+    },
+    {
+      "id": "3",
+      "base_coin_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1qc9k988ne9mrw37ewh2a6dzcsarp5fg5cw9t464f360mlff94pkspx3hg5",
+      "last_order_id": "680831",
+      "last_price": "133.360000000000000000",
+      "current_batch_id": "3694932"
+    },
+    {
+      "id": "4",
+      "base_coin_denom": "ibc/4627AD2524E3E0523047E35BB76CC90E37D9D57ACF14F0FCBCEB2480705F3CB8",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre12ruw2weslg77jy83hqdgezpjdtlj3zlv39wxjk3ay93vf0tnl5cs84xm3p",
+      "last_order_id": "146304",
+      "last_price": "0.001589300000000000",
+      "current_batch_id": "3608998"
+    },
+    {
+      "id": "5",
+      "base_coin_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+      "quote_coin_denom": "ibc/6F4968A73F90CF7DE6394BF937D6DF7C7D162D74D839C13F53B41157D315E05F",
+      "escrow_address": "cre1xdmzzxlum62tqlyhdywcra3kgvtuhpp6p852rlfkehr2vtyvk6hsm26xxw",
+      "last_order_id": "150182",
+      "last_price": "532.940000000000000000",
+      "current_batch_id": "3626345"
+    },
+    {
+      "id": "6",
+      "base_coin_denom": "ibc/4627AD2524E3E0523047E35BB76CC90E37D9D57ACF14F0FCBCEB2480705F3CB8",
+      "quote_coin_denom": "ibc/6F4968A73F90CF7DE6394BF937D6DF7C7D162D74D839C13F53B41157D315E05F",
+      "escrow_address": "cre1cfssenh6upssrvp2wa8ludujqrth289w9jy8wyure87wg4mksknsp6htev",
+      "last_order_id": "152931",
+      "last_price": "0.006062500000000000",
+      "current_batch_id": "3612768"
+    },
+    {
+      "id": "7",
+      "base_coin_denom": "ibc/C950356239AD2A205DE09FDF066B1F9FF19A7CA7145EA48A5B19B76EE47E52F7",
+      "quote_coin_denom": "ibc/DBF5FA602C46392DE9F4796A0FC7D02F3A8A3D32CA3FAA50B761D4AA6F619E95",
+      "escrow_address": "cre1lul00wtxn0dxyspkx4geujfecfpjcrvpde66zh8r3s5vesfx6f4sxyrnra",
+      "last_order_id": "0",
+      "last_price": null,
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "8",
+      "base_coin_denom": "ibc/DBF5FA602C46392DE9F4796A0FC7D02F3A8A3D32CA3FAA50B761D4AA6F619E95",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1g5qh9vlvn7rntt5rewp2lkphl0dhylvje4l5u20j2hv2ma5f6g9q3xwagv",
+      "last_order_id": "49967",
+      "last_price": "0.000000015025000000",
+      "current_batch_id": "3540840"
+    },
+    {
+      "id": "9",
+      "base_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1kttp9xxlzxvzkxqdqah55mrf2q2kewcamf3d5ure0xpqhy5rl5yq4rcpad",
+      "last_order_id": "1",
+      "last_price": null,
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "10",
+      "base_coin_denom": "ibc/C950356239AD2A205DE09FDF066B1F9FF19A7CA7145EA48A5B19B76EE47E52F7",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1c24ht80xclg0r462nllptqkty8wf2xk2f9vh3z0drutmpe46jytqmzm4me",
+      "last_order_id": "47386",
+      "last_price": "0.128990000000000000",
+      "current_batch_id": "3530001"
+    },
+    {
+      "id": "11",
+      "base_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "quote_coin_denom": "ibc/DBF5FA602C46392DE9F4796A0FC7D02F3A8A3D32CA3FAA50B761D4AA6F619E95",
+      "escrow_address": "cre15qy9gg9quklzr06wnvnu33zx6mjaygj24jtftcza7ewfgukrrnss3ctlgw",
+      "last_order_id": "0",
+      "last_price": null,
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "12",
+      "base_coin_denom": "ibc/DBF5FA602C46392DE9F4796A0FC7D02F3A8A3D32CA3FAA50B761D4AA6F619E95",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre14dgsq9p5va9m80ya9eqfznnvnjkvva976093smjety5zz2585kgs8r5ru7",
+      "last_order_id": "46127",
+      "last_price": "0.000000001624900000",
+      "current_batch_id": "3539034"
+    },
+    {
+      "id": "13",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre1m6xrk5p6veewkedz735lzsqdx5xghqulpxryz9huy5edjly3k6rs05uluq",
+      "last_order_id": "261995",
+      "last_price": "0.107480000000000000",
+      "current_batch_id": "3551809"
+    },
+    {
+      "id": "14",
+      "base_coin_denom": "ibc/F1806958CA98757B91C3FA1573ECECD24F6FA3804F074A6977658914A49E65A3",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre19gqgn6ew6snrtnqgd7yhf50ulf8v8yu4vekue9vrzn6ljkhcxv8q7jxnyv",
+      "last_order_id": "40364",
+      "last_price": "0.000000015127000000",
+      "current_batch_id": "3550889"
+    },
+    {
+      "id": "15",
+      "base_coin_denom": "ibc/F1806958CA98757B91C3FA1573ECECD24F6FA3804F074A6977658914A49E65A3",
+      "quote_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "escrow_address": "cre18yazzfd0z8hkkrk6963067gd79lt4x3nh727359349ux4jrnfnwsvu47mf",
+      "last_order_id": "40204",
+      "last_price": "0.000000001624300000",
+      "current_batch_id": "3543422"
+    },
+    {
+      "id": "16",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "escrow_address": "cre10ze7jqw94lq40rkne27nmujswrs6z65ugkhac7mlke74xga3yyps5lfq7a",
+      "last_order_id": "303236",
+      "last_price": "0.107520000000000000",
+      "current_batch_id": "3552667"
+    },
+    {
+      "id": "17",
+      "base_coin_denom": "ibc/F1806958CA98757B91C3FA1573ECECD24F6FA3804F074A6977658914A49E65A3",
+      "quote_coin_denom": "ibc/DBF5FA602C46392DE9F4796A0FC7D02F3A8A3D32CA3FAA50B761D4AA6F619E95",
+      "escrow_address": "cre1s9fgf70j6vrj97p79z6a7m84yz4xsswmpyqsyaftzklv9ww3rtesnye5ce",
+      "last_order_id": "10050",
+      "last_price": "1.002100000000000000",
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "18",
+      "base_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre184mn0ccp4nzz80p4yz2vhgurfmhj7cxu4w48r76ldevznrm0jd7sh0qq5n",
+      "last_order_id": "65022",
+      "last_price": "1.000700000000000000",
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "19",
+      "base_coin_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+      "quote_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "escrow_address": "cre1ag2h7yrhcyj9wx5jhqka260938s25jyr9m393jqhrz9z6kte9pzqthf3nh",
+      "last_order_id": "459307",
+      "last_price": "14.318000000000000000",
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "20",
+      "base_coin_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre1n3et9sdk453qthr2mt6n94z8hv8dk52mwsygl8jc06yvngvjmd5qz6zyzg",
+      "last_order_id": "410152",
+      "last_price": "14.319000000000000000",
+      "current_batch_id": "3528458"
+    },
+    {
+      "id": "21",
+      "base_coin_denom": "ibc/11F940BCDFD7CFBFD7EDA13F25DA95D308286D441209D780C9863FD4271514EB",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1gv6k8jmvt7qvmz6lx7t35ayyh8vdw7kz7ua4tatw8tsc6jeldxzqu6u9w9",
+      "last_order_id": "31256",
+      "last_price": "4.231900000000000000",
+      "current_batch_id": "2815275"
+    },
+    {
+      "id": "22",
+      "base_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "quote_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "escrow_address": "cre15wq74r2jerj4fegzaxk6g9q9t6a9848lcc8csglkt4unjx7njn9sp85j9p",
+      "last_order_id": "1",
+      "last_price": "0.999980000000000000",
+      "current_batch_id": "1631992"
+    },
+    {
+      "id": "23",
+      "base_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "quote_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "escrow_address": "cre15vvts7awgy9anavcpnll98fdcswdtjhhncnj3u9flzmhcpyjqrdsc3xpf2",
+      "last_order_id": "1",
+      "last_price": "0.999980000000000000",
+      "current_batch_id": "1625772"
+    },
+    {
+      "id": "24",
+      "base_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre129wtw72japgk65curd8hpeh74uz90y4qrerfyn9a2l3j264e0c0qkpcx9g",
+      "last_order_id": "7117",
+      "last_price": "0.999750000000000000",
+      "current_batch_id": "1563044"
+    },
+    {
+      "id": "25",
+      "base_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "quote_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "escrow_address": "cre13t99wuq7aqm2m2w5x3yr76upyhj0u7ce2a2dzs40dhu7r36qkdnsyp8gz8",
+      "last_order_id": "7653",
+      "last_price": "0.999930000000000000",
+      "current_batch_id": "1563037"
+    },
+    {
+      "id": "26",
+      "base_coin_denom": "ibc/5A76568E079A31FA12165E4559BA9F1E9D4C97F9C2060B538C84DCD503815E30",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1ncwj4rkkc8qgsfesayh8r4yd65z6ayd5dmwx6lafwsr3kxcetzfs9n823c",
+      "last_order_id": "11789",
+      "last_price": "0.000000000031959000",
+      "current_batch_id": "1427832"
+    },
+    {
+      "id": "27",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ibc/9EC8A1701813BB7B73BFED2496009ABB2C8BF187E6CDFA788D77F68E08BC05CD",
+      "escrow_address": "cre1m3jyhxn3lv0xhyu8qdlwa0mmmmpg3w7vd365x4yyxlsx5qk4djqqu6xx50",
+      "last_order_id": "8658",
+      "last_price": "0.107590000000000000",
+      "current_batch_id": "827745"
+    },
+    {
+      "id": "28",
+      "base_coin_denom": "ibc/9EC8A1701813BB7B73BFED2496009ABB2C8BF187E6CDFA788D77F68E08BC05CD",
+      "quote_coin_denom": "ibc/BFF0D3805B50D93E2FA5C0B2DDF7E0B30A631076CD80BC12A48C0E95404B4A41",
+      "escrow_address": "cre1dqj0ykxq5rsppup5znzmtw982klj7eqsvycv3lhxac7rtjf043jqrpac30",
+      "last_order_id": "11215",
+      "last_price": "0.999360000000000000",
+      "current_batch_id": "827658"
+    },
+    {
+      "id": "29",
+      "base_coin_denom": "ibc/61DF64ADF65230540C14C63D64897BE08A3DC9A516A91425913F01240E2F432F",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre15pnzc7fay7q9w94kv8q5t504hjuxqstt79de6y6xe5v7wfktgvwsa2kg45",
+      "last_order_id": "6900",
+      "last_price": "1.088400000000000000",
+      "current_batch_id": "827611"
+    },
+    {
+      "id": "30",
+      "base_coin_denom": "ibc/11F940BCDFD7CFBFD7EDA13F25DA95D308286D441209D780C9863FD4271514EB",
+      "quote_coin_denom": "ibc/6F4968A73F90CF7DE6394BF937D6DF7C7D162D74D839C13F53B41157D315E05F",
+      "escrow_address": "cre1vynwgp8cvxh5fjvke8khr36ffp8yrwhwnmla2005635rql7a574qegncpf",
+      "last_order_id": "0",
+      "last_price": null,
+      "current_batch_id": "631567"
+    },
+    {
+      "id": "31",
+      "base_coin_denom": "ibc/8F865D9760B482FF6254EDFEC1FF2F1273B9AB6873A7DE484F89639795D73D75",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1dvt2aa7v78rx2qk9rshczx4g5dyp4d5nw8ct6f7ad5r36x0cw3nqd8qljm",
+      "last_order_id": "4287",
+      "last_price": "18.009000000000000000",
+      "current_batch_id": "631260"
+    },
+    {
+      "id": "32",
+      "base_coin_denom": "ibc/D64F87FAE0B35C1954DD7921BA7A2939705DE77CBF72B8002F2E3552EDE4DE52",
+      "quote_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "escrow_address": "cre1uc6h6ffmp5awxura2m79dg0xq7vu5s3t65l0rryvt76h4y427jrqkyses4",
+      "last_order_id": "11606",
+      "last_price": "15.332000000000000000",
+      "current_batch_id": "597464"
+    },
+    {
+      "id": "33",
+      "base_coin_denom": "ubcre",
+      "quote_coin_denom": "ibc/CA1261224952DF089EFD363D8DBB30A8AB6D8CD181E60EE9E68E432F8DE14FE3",
+      "escrow_address": "cre1vtv6lv5xsk9fug6qllxfk8ztyzh567zekyfpmaafmds7cuffe3uslm8v4a",
+      "last_order_id": "6148",
+      "last_price": "0.107710000000000000",
+      "current_batch_id": "597450"
+    },
+    {
+      "id": "34",
+      "base_coin_denom": "ibc/C814F0B662234E24248AE3B2FE2C1B54BBAF12934B757F6E7BC5AEC119963895",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1lte5sqxjmeqd4vjhm9s2uk4xp08pumhdjk248fgjlp0ed7mf30msd6p6jl",
+      "last_order_id": "3802",
+      "last_price": "12.724000000000000000",
+      "current_batch_id": "371501"
+    },
+    {
+      "id": "35",
+      "base_coin_denom": "ibc/9EC8A1701813BB7B73BFED2496009ABB2C8BF187E6CDFA788D77F68E08BC05CD",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre1plq52wxjvhnplu64t6ngwkjsse3f5zf294f56dd25dm00kqv7rsq5gcsxf",
+      "last_order_id": "678",
+      "last_price": "1.001000000000000000",
+      "current_batch_id": "257003"
+    },
+    {
+      "id": "36",
+      "base_coin_denom": "ibc/73E97EB411B29C6F989C35D277D1A7FC65083572F102AC6BD101884EE9FB2C9F",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1qlw2fxf5fz724386m2m4y5w2uauc0jtqm59mdu6e6z62re65pktqyjezle",
+      "last_order_id": "0",
+      "last_price": null,
+      "current_batch_id": "222417"
+    },
+    {
+      "id": "37",
+      "base_coin_denom": "ibc/E32F6485CDAE995FC492010770936119D0BF90F5226C9AED727988DF03B5F569",
+      "quote_coin_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+      "escrow_address": "cre1fg3eprvw2rwjkhp27gg3tsl7m58fuad8ggw9rnawv98jkxhj2h9s36kgf8",
+      "last_order_id": "402",
+      "last_price": "1.012300000000000000",
+      "current_batch_id": "137351"
+    },
+    {
+      "id": "38",
+      "base_coin_denom": "ibc/0634D0993744740D675AD01E81156EAC945AEAAE17C074918DC7FF52F41B263E",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre1jsgqfu45qfc803m7acx7s5untuua2mkamvaqq09fyreuchhw8hjsfllfq8",
+      "last_order_id": "743",
+      "last_price": "7.457800000000000000",
+      "current_batch_id": "136594"
+    },
+    {
+      "id": "39",
+      "base_coin_denom": "ibc/1620B95419728A7DEF482DEB9462DD6B9FA120BCB49CCCF74209A56AB9835E59",
+      "quote_coin_denom": "ibc/CD01034D6749F20AAC5330EF4FD8B8CA7C40F7527AB8C4A302FBD2A070852EE1",
+      "escrow_address": "cre1fnyyemjs5fdw2lldlf55wax57uwjdc8lxre8slklcu9yclzxj9wqu949ul",
+      "last_order_id": "8",
+      "last_price": "239.950000000000000000",
+      "current_batch_id": "119943"
+    },
+    {
+      "id": "40",
+      "base_coin_denom": "ibc/764D1629980B02BAFF3D25BEE4FB1E0C5E350AFA252FDF66E68E10D2179A826A",
+      "quote_coin_denom": "ubcre",
+      "escrow_address": "cre182ssehtk7tj42k7ldngfh58x4ra6uhxpty044m7hexazxtzwx5ls6hprfu",
+      "last_order_id": "1",
+      "last_price": "0.000000000287020000",
+      "current_batch_id": "5223"
+    }
+  ],
+  "pagination": {
+    "next_key": null,
+    "total": "40"
+  }
+}

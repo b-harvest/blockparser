@@ -109,137 +109,317 @@ func BlockParserCmdForChart() *cobra.Command {
 			cntInsert := 0 // number of inserted rows
 			cntOrder := 0  // total Orders
 
+			//Swap Data
+			txReqMap := make(map[string]SwapReqRow, 8192)
+
 			// main iteration
 			for i := startHeight; i < endHeight; i++ {
 				block := blockStore.LoadBlock(i)
 				blockHeight := i
 				blockTime := block.Time.UTC().Unix()
 
-				abciResponses, err := stateStore.LoadABCIResponses(i)
+				results, err := stateStore.LoadABCIResponses(i)
 				// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/proto/tendermint/state#ABCIResponses
 				if err != nil {
 					return err
 				}
 
-				for _, tx := range abciResponses.DeliverTxs {
-					//fmt.Println("tx.Data : ", string(tx.Data))
-					//fmt.Println("tx.Events length : ", len(tx.Events))
-					//fmt.Println(tx.Info)
-					//fmt.Println(tx.Log)
-					//fmt.Println(tx.XXX_Unmarshal(tx.GetData()))
-
+				for _, tx := range results.DeliverTxs {
 					// find "order" related events
 					for _, evt := range tx.Events {
-						// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/abci/types#Event
 						if strings.Contains(evt.Type, "order") {
-							if evt.Type == "market_order" || evt.Type == "limit_order" {
-								var oe = OrderEvent{}
-								oe.BlockHeight = strconv.FormatInt(blockHeight, 10)
-								oe.BlockTime = blockTime
-								oe.EventType = evt.Type
-
-								for _, attr := range evt.Attributes {
-									// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/abci/types#EventAttribute
-									key := string(attr.Key)
-									value := string(attr.Value)
-
-									switch key {
-									case "orderer":
-										oe.Orderer = value
-									case "pair_id":
-										oe.PairId = value
-									case "order_direction":
-										oe.OrderDirection = value
-									case "offer_coin":
-										oe.OfferCoin = value
-									case "demand_coin_denom":
-										oe.DemandCoinDenom = value
-									case "price":
-										oe.Price = value
-									case "amount":
-										oe.Amount = value
-									case "order_id":
-										oe.OrderId = value
-									case "batch_id":
-										oe.BatchId = value
-									case "expire_at":
-										oe.ExpireAt = value
-									case "refunded_coins":
-										oe.RefundedCoins = value
-									}
-								}
-
-								//원래는 블록타임 기준이 아닌 time.Now().UnixMicro() 값이 ts_60bar 기준이었음
-								//ts_60bar := blockTime
-								ts_60bar := int64(math.Floor(float64(blockTime)/60) * 60)
-								ts_now := time.Now().Unix()
-								lastTs := int64(0)
-								tmpVolume, err := strconv.ParseFloat(oe.Amount, 64)
-								if err != nil {
-									fmt.Println(err)
-									continue
-								}
-								tmpPairId, err := strconv.ParseUint(oe.PairId, 10, 64)
-								if err != nil {
-									fmt.Println(err)
-									continue
-								}
-								// check last_ts for a pair
-								pairListTs, ok := pairLastTs[tmpPairId]
-								if ok {
-									lastTs = pairListTs
-								}
-								// if lastTs 와 같은 분 단위가 아니라면(1분 단위가 넘어갔다면) insert
-								insertNew := (ts_60bar > lastTs || lastTs == 0)
-
-								// DB insert & update
-								func(insert bool, ts_now, ts_60bar, lastBarTs int64, pair string, price string, v float64) {
-									//TODO: use connection pool instead (or seperated to other process)
-									cntOrder++
-									if insertNew {
-										cntInsert++
-										//new bar
-										// chart_insert procedure 는 모든 bar 를 동시에 체크한다.
-										// 장애 상황에서는 어떤 bar 는 이미 존재할 수 있다.
-										// 존재하더라도 로직 상 무방하다. procedure 에서 이미 존재하는 것은 pass 하고 생성한다.
-										call_insert := "CALL chart_insert(?,?,?,?,?)"
-										_, err := conn.Exec(call_insert, pair, ts_60bar, price, price, lastBarTs)
-										if err != nil {
-											fmt.Println(err)
-										} else {
-											log.Println(blockHeight, "block, pairId", pair, "INSERTED")
-										}
-									}
-									// update current bar
-									// 장애 상황에서는 있어야 할 bar 가 없을 수도 있다고 생각할 수 있다.
-									// 하지만 위 insert 문에서 모두 커버한다.
-									// lastTs 가 없는 상황에서 프로그램이 시작되므로 bar 가 없다면 insert 후 시작한다.
-									// 그 후 순차적으로 블록을 탐색하기 때문에 bar 는 반드시 존재한다.
-									//updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
-									updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select uid from chart_data where pair_id=? and ts_sec in (SELECT MAX(ts_sec) as ts_sec FROM chart_data WHERE ts_sec <= ? and pair_id=? GROUP BY resolution))"
-									_, err = conn.Exec(updateQ, ts_now, price, v, price, price, pair, ts_60bar, pair)
-									if err != nil {
-										fmt.Println(err)
-									} else {
-										log.Println(blockHeight, "block, pairId", pair, "updated")
-									}
-								}(insertNew, ts_now, ts_60bar, lastTs, oe.PairId, oe.Price, tmpVolume)
-
-								//new bar
-								// call_insert := "CALL chart_insert(?,?,?,?,?)"
-								// _, err = conn.Exec(call_insert, oe.pairId, ts_60bar, oe.price, oe.price, lastTs)
-								// if err != nil {
-								// 	fmt.Println(err)
-								// } else {
-								// 	log.Println(blockHeight)
-								// }
-
-								// update lastTs
-								pairLastTs[tmpPairId] = ts_60bar
-							}
+							//fmt.Println(evt.Type)
 						}
-					} // event type end
+						pairStr := ""
+						reqStr := ""
+
+						if evt.Type == "limit_order" || evt.Type == "market_order" {
+							req := SwapReqRow{}
+							for _, att := range evt.Attributes {
+								v := string(att.Value)
+								switch string(att.Key) {
+								case "orderer":
+									req.Owner = v
+								case "pair_id":
+									pairStr = v
+									pid, err := strconv.ParseUint(v, 10, 64)
+									if err != nil {
+										panic(err.Error())
+									}
+									req.PairId = pid
+								case "order_id":
+									reqStr = v
+									rid, err := strconv.ParseUint(v, 10, 64)
+									if err != nil {
+										panic(err.Error())
+									}
+									req.ReqId = rid
+								case "order_direction":
+									if v == "ORDER_DIRECTION_BUY" {
+										req.Direction = 1
+									} else if v == "ORDER_DIRECTION_SELL" {
+										req.Direction = 2
+									} else {
+										panic("no direction")
+									}
+								case "offer_coin":
+									c, err := sdk.ParseCoinNormalized(v)
+									if err != nil {
+										panic("offer coin err")
+									}
+									req.OfferDenom = c.Denom
+									req.OfferAmount = c.Amount.String()
+								case "demand_coin_denom":
+									req.DemandDenom = v
+								case "price":
+									req.Price = v //denom exp 적용 필요
+								case "amount":
+									req.OpenBaseAmount = v
+								case "expire_at":
+									t, err := time.Parse(time.RFC3339, v)
+									if err != nil {
+										fmt.Println(t)
+										panic("time err")
+									}
+									req.ExpireTimestamp = t.Unix()
+									//case "batch_id":
+
+								} // end switch
+
+								//req.TxHash =
+
+							} // end attribute
+							req.Status = 1
+							req.Height = i
+
+							kk := pairStr + "_" + reqStr
+							txReqMap[kk] = req
+
+							fmt.Print("[TX] ")
+							fmt.Println(req)
+
+						}
+					}
 				} // abciResponses.DeliverTxs iteration
+
+				for _, event := range results.EndBlock.Events {
+					if strings.Contains(event.String(), "order_result") {
+						req := SwapReqRow{}
+						pairStr := ""
+						reqStr := ""
+						for _, att := range event.Attributes {
+							v := string(att.Value)
+							switch string(att.Key) {
+							case "orderer":
+								req.Owner = v
+							case "pair_id":
+								pairStr = v
+								pid, err := strconv.ParseUint(v, 10, 64)
+								if err != nil {
+									panic(err.Error())
+								}
+								req.PairId = pid
+							case "order_id":
+								reqStr = v
+								rid, err := strconv.ParseUint(v, 10, 64)
+								if err != nil {
+									panic(err.Error())
+								}
+								req.ReqId = rid
+							case "order_direction":
+								if v == "ORDER_DIRECTION_BUY" {
+									req.Direction = 1
+								} else if v == "ORDER_DIRECTION_SELL" {
+									req.Direction = 2
+								} else {
+									panic("no direction")
+								}
+							case "offer_coin":
+								c, err := sdk.ParseCoinNormalized(v)
+								if err != nil {
+									panic("offer coin err")
+								}
+								req.OfferDenom = c.Denom
+								req.OfferAmount = c.Amount.String()
+							case "amount":
+								req.FilledBaseAmount = v
+							case "open_amount":
+								req.OpenBaseAmount = v
+							case "remaining_offer_coin":
+								c, err := sdk.ParseCoinNormalized(v)
+								if err != nil {
+									panic("offer coin err")
+								}
+								req.RemainOfferAmount = c.Amount.String()
+							case "received_coin":
+								c, err := sdk.ParseCoinNormalized(v)
+								if err != nil {
+									panic("offer coin err")
+								}
+								req.DemandReceivedAmount = c.Amount.String()
+							case "status":
+								req.Status = int(liquiditytypes.OrderStatus_value[v])
+								//case "batch_id":
+
+							} // end switch
+						}
+						kk := pairStr + "_" + reqStr
+
+						reqOrg, ok := txReqMap[kk]
+						if ok {
+							reqOrg.FilledBaseAmount = req.FilledBaseAmount
+							reqOrg.OpenBaseAmount = req.OpenBaseAmount
+							reqOrg.RemainOfferAmount = req.RemainOfferAmount
+							reqOrg.DemandReceivedAmount = req.DemandReceivedAmount
+							reqOrg.Status = req.Status
+							reqOrg.UpdateHeight = i
+
+							txReqMap[kk] = reqOrg
+						} else {
+							fmt.Println("skip. no req tx:" + kk)
+							continue
+						}
+
+						//fmt.Println("chart 에 넣어야 할 트랜잭션 발견")
+						//fmt.Println(txReqMap[kk])
+						fmt.Println(i, "[endblock-o]", event.String())
+
+						// start recover
+						//원래는 블록타임 기준이 아닌 time.Now().UnixMicro() 값이 ts_60bar 기준이었음
+						//ts_60bar := blockTime
+						ts_60bar := int64(math.Floor(float64(blockTime)/60) * 60)
+						ts_now := time.Now().Unix()
+						lastTs := int64(0)
+						tmpVolume, err := strconv.ParseFloat(reqOrg.FilledBaseAmount, 64)
+						if err != nil {
+							fmt.Println(err)
+							continue
+						}
+						tmpPairId := reqOrg.PairId
+						if err != nil {
+							fmt.Println(err)
+							continue
+						}
+						// check last_ts for a pair
+						pairListTs, ok := pairLastTs[tmpPairId]
+						if ok {
+							lastTs = pairListTs
+						}
+						// if lastTs 와 같은 분 단위가 아니라면(1분 단위가 넘어갔다면) insert
+						insertNew := (ts_60bar > lastTs || lastTs == 0)
+
+						// DB insert & update
+						func(insert bool, ts_now, ts_60bar, lastBarTs int64, pair uint64, price string, v float64) {
+							//TODO: use connection pool instead (or seperated to other process)
+							cntOrder++
+							if insertNew {
+								cntInsert++
+								//new bar
+								// chart_insert procedure 는 모든 bar 를 동시에 체크한다.
+								// 장애 상황에서는 어떤 bar 는 이미 존재할 수 있다.
+								// 존재하더라도 로직 상 무방하다. procedure 에서 이미 존재하는 것은 pass 하고 생성한다.
+								call_insert := "CALL chart_insert(?,?,?,?,?)"
+								_, err := conn.Exec(call_insert, pair, ts_60bar, price, price, lastBarTs)
+								if err != nil {
+									fmt.Println(err)
+								} else {
+									log.Println(blockHeight, "block, pairId", pair, "INSERTED")
+								}
+							}
+							// update current bar
+							// 장애 상황에서는 있어야 할 bar 가 없을 수도 있다고 생각할 수 있다.
+							// 하지만 위 insert 문에서 모두 커버한다.
+							// lastTs 가 없는 상황에서 프로그램이 시작되므로 bar 가 없다면 insert 후 시작한다.
+							// 그 후 순차적으로 블록을 탐색하기 때문에 bar 는 반드시 존재한다.
+							//updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
+							updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select uid from chart_data where pair_id=? and ts_sec in (SELECT MAX(ts_sec) as ts_sec FROM chart_data WHERE ts_sec <= ? and pair_id=? GROUP BY resolution))"
+							_, err = conn.Exec(updateQ, ts_now, price, v, price, price, pair, ts_60bar, pair)
+							if err != nil {
+								fmt.Println(err)
+							} else {
+								log.Println(blockHeight, "block, pairId", pair, "updated")
+							}
+						}(insertNew, ts_now, ts_60bar, lastTs, reqOrg.PairId, reqOrg.Price, tmpVolume)
+
+						// update lastTs
+						pairLastTs[tmpPairId] = ts_60bar
+
+						// end recover
+					} else if strings.Contains(event.String(), "user_order_matched") {
+						// f := SwapFilledRow{}
+						// dir := 0
+						// var o, d sdk.Int
+
+						// for _, att := range event.Attributes {
+						// 	v := string(att.Value)
+						// 	switch string(att.Key) {
+						// 	case "orderer":
+						// 		f.Owner = v
+						// 	case "pair_id":
+						// 		pid, err := strconv.ParseUint(v, 10, 64)
+						// 		if err != nil {
+						// 			panic(err.Error())
+						// 		}
+						// 		f.PairId = pid
+						// 	case "order_id":
+						// 		rid, err := strconv.ParseUint(v, 10, 64)
+						// 		if err != nil {
+						// 			panic(err.Error())
+						// 		}
+						// 		f.ReqId = rid
+						// 	case "order_direction":
+						// 		if v == "ORDER_DIRECTION_BUY" {
+						// 			dir = 1
+						// 		} else if v == "ORDER_DIRECTION_SELL" {
+						// 			dir = 2
+						// 		} else {
+						// 			panic("no direction")
+						// 		}
+						// 	case "paid_coin":
+						// 		c, err := sdk.ParseCoinNormalized(v)
+						// 		if err != nil {
+						// 			panic("offer coin err")
+						// 		}
+						// 		f.OfferDenom = c.Denom
+						// 		f.FilledOfferAmount = c.Amount.String()
+						// 		o = c.Amount
+
+						// 	case "received_coin":
+						// 		c, err := sdk.ParseCoinNormalized(v)
+						// 		if err != nil {
+						// 			panic("offer coin err")
+						// 		}
+						// 		f.DemandDenom = c.Denom
+						// 		f.FilledDemandAmount = c.Amount.String()
+						// 		d = c.Amount
+						// 		//case "batch_id":
+
+						// 	} // end switch
+
+						// 	//f.Price
+						// 	/*
+						// 		f.Status
+						// 		f.SwappedBaseAmount
+						// 		f.Timestamp
+						// 	*/
+						// }
+						// f.Height = i
+						// if dir == 1 {
+						// 	p := o.ToDec().QuoInt(d)
+						// 	f.Price = p.String()
+						// 	f.SwappedBaseAmount = d.String()
+						// } else {
+						// 	p := d.ToDec().QuoInt(o)
+						// 	f.Price = p.String()
+						// 	f.SwappedBaseAmount = o.String()
+						// }
+						// fmt.Println("user_order_matched 이벤트 발견")
+						// fmt.Println(f)
+						// fmt.Println(i, "[endblock-u]", event.String())
+
+					}
+
+				}
 			} // iteration of startHeight ~ endHeight
 
 			log.Println("total number of DB updated :", cntOrder)
@@ -836,5 +1016,220 @@ func NewBlockParserCmd() *cobra.Command {
 			return nil
 		},
 	}
+	return cmd
+}
+
+func BlockParserCmdForChartBk() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "blockparser chart [chain-dir] [start-height] [end-height]",
+		Args: cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dir := args[1]
+			startHeight, err := strconv.ParseInt(args[2], 10, 64)
+			if err != nil {
+				return fmt.Errorf("parse start-Height: %w", err)
+			}
+			endHeight, err := strconv.ParseInt(args[3], 10, 64)
+			if err != nil {
+				return fmt.Errorf("parse end-Height: %w", err)
+			}
+
+			blockDB, err := tmdb.NewGoLevelDBWithOpts(BLOCK_DB, dir, &opt.Options{
+				ErrorIfMissing: true,
+				ReadOnly:       true,
+			})
+			if err != nil {
+				panic(err)
+			}
+			defer blockDB.Close()
+
+			stateDB, err := tmdb.NewGoLevelDBWithOpts(STATE_DB, dir, &opt.Options{
+				ErrorIfMissing: true,
+				ReadOnly:       true,
+			})
+			if err != nil {
+				panic(err)
+			}
+			defer stateDB.Close()
+			stateStore := state.NewStore(stateDB, state.StoreOptions{
+				DiscardABCIResponses: false,
+			})
+			blockStore := store.NewBlockStore(blockDB)
+
+			fmt.Println("Loaded : ", dir+"/data/")
+			fmt.Println("Input Start Height :", startHeight)
+			fmt.Println("Input End Height :", endHeight)
+			fmt.Println("Latest Height :", blockStore.Height())
+
+			// checking start height
+			block := blockStore.LoadBlock(startHeight)
+			if block == nil {
+				fmt.Println(startHeight, "is not available on this data")
+				for i := 0; i < 1000000000000; i++ {
+					block := blockStore.LoadBlock(int64(i))
+					if block != nil {
+						fmt.Println("available starting Height : ", i)
+						break
+					}
+				}
+				return nil
+			}
+
+			// checking end height
+			if endHeight > blockStore.Height() {
+				fmt.Println(endHeight, "is not available, Latest Height : ", blockStore.Height())
+				return nil
+			}
+			//conn, err := sql.Open("mysql", "devops:passw0rd@tcp(51.195.63.75:3306)/crst_chart") // 1
+			conn, err := sql.Open("mysql", DSN)
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer conn.Close() // 3
+
+			// store last_ts for each pairs
+			type PairLastTs map[uint64]int64
+			pairLastTs := PairLastTs{}
+			cntInsert := 0 // number of inserted rows
+			cntOrder := 0  // total Orders
+
+			// main iteration
+			for i := startHeight; i < endHeight; i++ {
+				block := blockStore.LoadBlock(i)
+				blockHeight := i
+				blockTime := block.Time.UTC().Unix()
+
+				abciResponses, err := stateStore.LoadABCIResponses(i)
+				// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/proto/tendermint/state#ABCIResponses
+				if err != nil {
+					return err
+				}
+
+				for _, tx := range abciResponses.DeliverTxs {
+					//fmt.Println("tx.Data : ", string(tx.Data))
+					//fmt.Println("tx.Events length : ", len(tx.Events))
+					//fmt.Println(tx.Info)
+					//fmt.Println(tx.Log)
+					//fmt.Println(tx.XXX_Unmarshal(tx.GetData()))
+
+					// find "order" related events
+					for _, evt := range tx.Events {
+						// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/abci/types#Event
+						if strings.Contains(evt.Type, "order") {
+							if evt.Type == "market_order" || evt.Type == "limit_order" {
+								var oe = OrderEvent{}
+								oe.BlockHeight = strconv.FormatInt(blockHeight, 10)
+								oe.BlockTime = blockTime
+								oe.EventType = evt.Type
+
+								for _, attr := range evt.Attributes {
+									// https://pkg.go.dev/github.com/tendermint/tendermint@v0.34.22/abci/types#EventAttribute
+									key := string(attr.Key)
+									value := string(attr.Value)
+
+									switch key {
+									case "orderer":
+										oe.Orderer = value
+									case "pair_id":
+										oe.PairId = value
+									case "order_direction":
+										oe.OrderDirection = value
+									case "offer_coin":
+										oe.OfferCoin = value
+									case "demand_coin_denom":
+										oe.DemandCoinDenom = value
+									case "price":
+										oe.Price = value
+									case "amount":
+										oe.Amount = value
+									case "order_id":
+										oe.OrderId = value
+									case "batch_id":
+										oe.BatchId = value
+									case "expire_at":
+										oe.ExpireAt = value
+									case "refunded_coins":
+										oe.RefundedCoins = value
+									}
+								}
+
+								//원래는 블록타임 기준이 아닌 time.Now().UnixMicro() 값이 ts_60bar 기준이었음
+								//ts_60bar := blockTime
+								ts_60bar := int64(math.Floor(float64(blockTime)/60) * 60)
+								ts_now := time.Now().Unix()
+								lastTs := int64(0)
+								tmpVolume, err := strconv.ParseFloat(oe.Amount, 64)
+								if err != nil {
+									fmt.Println(err)
+									continue
+								}
+								tmpPairId, err := strconv.ParseUint(oe.PairId, 10, 64)
+								if err != nil {
+									fmt.Println(err)
+									continue
+								}
+								// check last_ts for a pair
+								pairListTs, ok := pairLastTs[tmpPairId]
+								if ok {
+									lastTs = pairListTs
+								}
+								// if lastTs 와 같은 분 단위가 아니라면(1분 단위가 넘어갔다면) insert
+								insertNew := (ts_60bar > lastTs || lastTs == 0)
+
+								// DB insert & update
+								func(insert bool, ts_now, ts_60bar, lastBarTs int64, pair string, price string, v float64) {
+									//TODO: use connection pool instead (or seperated to other process)
+									cntOrder++
+									if insertNew {
+										cntInsert++
+										//new bar
+										// chart_insert procedure 는 모든 bar 를 동시에 체크한다.
+										// 장애 상황에서는 어떤 bar 는 이미 존재할 수 있다.
+										// 존재하더라도 로직 상 무방하다. procedure 에서 이미 존재하는 것은 pass 하고 생성한다.
+										call_insert := "CALL chart_insert(?,?,?,?,?)"
+										_, err := conn.Exec(call_insert, pair, ts_60bar, price, price, lastBarTs)
+										if err != nil {
+											fmt.Println(err)
+										} else {
+											log.Println(blockHeight, "block, pairId", pair, "INSERTED")
+										}
+									}
+									// update current bar
+									// 장애 상황에서는 있어야 할 bar 가 없을 수도 있다고 생각할 수 있다.
+									// 하지만 위 insert 문에서 모두 커버한다.
+									// lastTs 가 없는 상황에서 프로그램이 시작되므로 bar 가 없다면 insert 후 시작한다.
+									// 그 후 순차적으로 블록을 탐색하기 때문에 bar 는 반드시 존재한다.
+									//updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select * from (SELECT MAX(uid) as uid FROM chart_data WHERE pair_id=? GROUP BY resolution) AS X)"
+									updateQ := "UPDATE chart_data SET update_ts_sec = ?, c= ?, v = v + ?, cnt = cnt + 1, h = GREATEST(h,?), l = LEAST(l,?) WHERE uid IN (select uid from chart_data where pair_id=? and ts_sec in (SELECT MAX(ts_sec) as ts_sec FROM chart_data WHERE ts_sec <= ? and pair_id=? GROUP BY resolution))"
+									_, err = conn.Exec(updateQ, ts_now, price, v, price, price, pair, ts_60bar, pair)
+									if err != nil {
+										fmt.Println(err)
+									} else {
+										log.Println(blockHeight, "block, pairId", pair, "updated")
+									}
+								}(insertNew, ts_now, ts_60bar, lastTs, oe.PairId, oe.Price, tmpVolume)
+
+								//new bar
+								// call_insert := "CALL chart_insert(?,?,?,?,?)"
+								// _, err = conn.Exec(call_insert, oe.pairId, ts_60bar, oe.price, oe.price, lastTs)
+								// if err != nil {
+								// 	fmt.Println(err)
+								// } else {
+								// 	log.Println(blockHeight)
+								// }
+
+								// update lastTs
+								pairLastTs[tmpPairId] = ts_60bar
+							}
+						}
+					} // event type end
+				} // abciResponses.DeliverTxs iteration
+			} // iteration of startHeight ~ endHeight
+
+			log.Println("total number of DB updated :", cntOrder)
+			log.Println("total number of DB insert procedure called :", cntInsert)
+			return nil
+		}, // RunE end
+	} // cmd end
 	return cmd
 }

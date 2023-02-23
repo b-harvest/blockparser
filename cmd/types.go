@@ -215,3 +215,41 @@ type OrderEvent struct {
 	ExpireAt        string
 	RefundedCoins   string
 }
+
+type SwapFilledRow struct {
+	PairId             uint64 `db:"pair_id" json:"pairId,omitempty"`
+	ReqId              uint64 `db:"req_id" json:"reqId,omitempty"`
+	BatchId            uint64 `db:"batch_id" json:"batchId,omitempty"`
+	Status             int    `db:"status" json:"-"`
+	Height             int64  `db:"height" json:"-"`
+	Timestamp          int64  `db:"timestamp" json:"-"`
+	OfferDenom         string `db:"offer_denom" json:"offerDenom"`
+	DemandDenom        string `db:"demand_denom" json:"demandDenom"`
+	FilledOfferAmount  string `db:"offer_amount" json:"offerAmount"`   // for this batch
+	FilledDemandAmount string `db:"demand_amount" json:"demandAmount"` // for this batch
+	Price              string `db:"price" json:"price"`
+	SwappedBaseAmount  string `db:"swapped_base_amount" json:"swappedBaseAmount"` // for this batch
+	Owner              string `db:"owner" json:"-"`
+}
+
+// json for record tx event
+type SwapReqRow struct {
+	PairId               uint64 `db:"pair_id" json:"pairId,omitempty"`
+	ReqId                uint64 `db:"req_id" json:"reqId,omitempty"`
+	Height               int64  `db:"height" json:"-"` // order tx height
+	Timestamp            int64  `db:"timestamp" json:"-"`
+	Price                string `db:"order_price" json:"orderPrice"`
+	FilledBaseAmount     string `db:"filled_base_amount" json:"-"`             // accumulated
+	OpenBaseAmount       string `db:"open_base_amount" json:"orderBaseAmount"` // accumulated
+	ExpireTimestamp      int64  ` db:"expire_ts" json:"expireTimestamp"`
+	Direction            int    `db:"direction" json:"direction,omitempty"`
+	Status               int    `db:"status" json:"-"`
+	OfferAmount          string `db:"offer_amount" json:"offerAmount"`
+	RemainOfferAmount    string `db:"remain_offer_amount" json:"remainOfferAmount"`
+	OfferDenom           string `db:"offer_denom" json:"offerDenom"`
+	DemandDenom          string `db:"demand_denom" json:"demandDenom"`
+	DemandReceivedAmount string `db:"demand_received_amount" json:"receivedDemandAmount"` // acc
+	Owner                string `db:"owner" json:"-"`
+	TxHash               string `json:"txhash" db:"txhash"`
+	UpdateHeight         int64  `db:"update_height" json:"-"` // req state updated
+}

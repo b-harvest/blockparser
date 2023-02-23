@@ -1,0 +1,120 @@
+pools 정보에서
+총 pool_token 발행량과 현재 해당 풀이 보유한 A,B balances 를 알 수 있다.
+그리고 price 도 알 수 있다.
+
+하지만 bcre 가 포함되지 않는 pool 들도 있다. 따라서 bcre 를 기준으로 가치를 계산하는 건 꽤나 어렵다
+oracle price 를 사용하지 않으려면 
+
+* 플랜 정보
+https://mainnet.crescent.network:1317/crescent/lpfarm/v1beta1/plans
+
+
+================================================================================
+
+AXL / bCRE 를 예로 계산해보자.
+AXL denom 은 ibc/0634D0993744740D675AD01E81156EAC945AEAAE17C074918DC7FF52F41B263E 이다.
+
+먼저 pool_id 를 찾아야 한다.
+https://mainnet.crescent.network:1317/crescent/liquidity/v1beta1/pools
+    {
+      "type": "POOL_TYPE_RANGED",
+      "id": "58",
+      "pair_id": "38",
+      "creator": "cre104y8llwm2tvkvcpw2wsf9sgzpdlhdshl762tvv",
+      "reserve_address": "cre1t52dl5k2r5j3pwpd8wl5pd2cw6uwe6rzxead0llqvq4u43h2kcesxpjlhw",
+      "pool_coin_denom": "pool58",
+      "pool_coin_supply": "72820835039508257",
+      "min_price": "3.000000000000000000",
+      "max_price": "15.000000000000000000",
+      "price": "7.562023788010774327",
+      "balances": {
+        "base_coin": {
+          "denom": "ibc/0634D0993744740D675AD01E81156EAC945AEAAE17C074918DC7FF52F41B263E",
+          "amount": "50516502942"
+        },
+        "quote_coin": {
+          "denom": "ubcre",
+          "amount": "487618627595"
+        }
+      },
+      "last_deposit_request_id": "568",
+      "last_withdraw_request_id": "24",
+      "disabled": false
+    },
+
+전체 들어가는 양은
+pools[i].pool_coin_supply = 72820835039508257
+
+전체 들어간 코인들의 가치
+pools[i].balances.base_coin.amount * base_coin_price_bcre(price) +
+pools[i].balances.quote_coin.amount * quote_coin_price_bcre(1)
+= 50516502942 * 7.562023788010774327 + 487618627595
+
+"pool_coin_denom": "pool58" 이다. 이 정보를 바탕으로 plan 을 조회한다.
+https://mainnet.crescent.network:1317/crescent/lpfarm/v1beta1/plans
+/crescent/farming/v1beta1/plans
+왜 둘다 pool58 정보가 없지?
+
+아래 정보를 통해 조회할 수 있다.
+https://mainnet.crescent.network:1317/crescent/lpfarm/v1beta1/farms/pool58
+{
+  "farm": {
+    "total_farming_amount": "72339890411430054",
+    "current_rewards": [
+      {
+        "denom": "ucre",
+        "amount": "3420827.000000000000000000"
+      }
+    ],
+    "outstanding_rewards": [
+      {
+        "denom": "ucre",
+        "amount": "2824819454.000000000000000000"
+      }
+    ],
+    "period": "681",
+    "previous_share": "1.000000000000000000"
+  }
+}
+
+그런데 생각해보니 pool 에 넣었다고 모두 farm 을 하는 것은 아니다.
+따라서 pool 토큰에 1개에 대한 가치(A+B pair) 를 산정해야 한다.
+
+
+72820835039508257   pool_coin_supply (pool)
+72339890411430054   total_farming_amount (farm)
+
+AXL/bCRE 풀의 pair_id 는 38 이다.
+plan 을 조회해보면 다음과 같다.
+https://mainnet.crescent.network:1317/crescent/lpfarm/v1beta1/plans
+        {
+          "denom": "",
+          "pair_id": "38",
+          "rewards_per_day": [
+            {
+              "denom": "ucre",
+              "amount": "5622000000"
+            }
+          ]
+        }
+ucre 를 ubcre 로 환산하면 5622000000 * 1.209457832026609567 = 6799571931.653598985674
+
+이제 AXL/BCRE계산을 해보자.
+//total_pool_value = 풀에 deposit 된 전체 가치
+total_pool_value = pools[i].balances.base_coin.amount * base_coin_price_bcre(price) +
+pools[i].balances.quote_coin.amount * quote_coin_price_bcre(1)
+= 50516502942 * 7.562023788010774327 + 487618627595 = 
+382006996934 + 487618627595 = 869625624529
+
+//total_lf_value = 팜에 staking 된 전체 가치
+total_amount_pool_tokens : total_amount_lf_tokens = total_pool_value : total_lf_value
+total_lf_value = (total_amount_lf_tokens * total_pool_value) / total_amount_pool_tokens
+= 72339890411430054 * 869625624529 / 72820835039508257
+= 863882188981.612236353138041
+
+//APR = 1년간 받는 총 reward / 팜에 staking 된 전체 가치 %
+APR = (rewards_per_day / total_lf_value) * 365 * 100
+= (6799571931.653598985674 / 863882188981.612236353138041) * 365 * 100
+= 28.728960808640885
+하.. 이상하게 나온다.
+

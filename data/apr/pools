@@ -1,0 +1,27 @@
+
+{
+  "__comment__": "https://mainnet.crescent.network:1317/crescent/liquidity/v1beta1/pools",
+  "type": "POOL_TYPE_BASIC",
+  "id": "1",
+  "pair_id": "1",
+  "creator": "",
+  "reserve_address": "cre1353ausz7n8arsyf6dp0mq7gvj4ry2c2ht284kzrrft2mx7rdvfnsxuuamx",
+  "pool_coin_denom": "pool1",
+  "pool_coin_supply": "3080483419789603510",
+  "min_price": null,
+  "max_price": null,
+  "price": "1.209284562084150301",
+  "balances": {
+    "base_coin": {
+      "denom": "ubcre",
+      "amount": "2808787663935"
+    },
+    "quote_coin": {
+      "denom": "ucre",
+      "amount": "3396623560169"
+    }
+  },
+  "last_deposit_request_id": "107245",
+  "last_withdraw_request_id": "22551",
+  "disabled": false
+}
